@@ -126,4 +126,9 @@ public class GameManager : MonoBehaviour
     {
         ball.BallInitialMove();
     }
+
+    public void BallReset()
+    {
+
+    }
 }

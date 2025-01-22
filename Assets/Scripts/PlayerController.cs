@@ -47,4 +47,6 @@ public class PlayerController : MonoBehaviour
         float xPos = Mathf.Clamp(mousePosInWorld, -6.4f, 6.4f);
         transform.position = new Vector3(xPos, -4.5f, 0);
     }
+
+
 }
