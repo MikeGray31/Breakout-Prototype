@@ -6,6 +6,16 @@ public class BrickScript : MonoBehaviour
 {
 
     public event Action<BrickScript> BallHit;
+    public event Action<BrickScript> BrickDestroyed;
+    
+    public float BrickHealth;
+    private Animator animator;
+
+    private void Awake()
+    {
+        animator = GetComponent<Animator>();
+        BrickHealth = 10f;
+    }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
@@ -19,6 +29,17 @@ public class BrickScript : MonoBehaviour
     public void OnBallHit()
     {
         Debug.Log("OnBallHit() called!");
-        BallHit?.Invoke(this);
+        BrickHealth = Mathf.Clamp(BrickHealth - 5f, 0, 10f);
+        if(BrickHealth <= 0)
+        {
+            BrickDestroyed?.Invoke(this);
+        }
+        else
+        {
+            animator.Play("BrickHitAnimation");
+            BallHit?.Invoke(this);
+        }
     }
+
+
 }

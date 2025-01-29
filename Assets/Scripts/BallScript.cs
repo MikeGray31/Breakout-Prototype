@@ -8,8 +8,12 @@ public class BallScript : MonoBehaviour
 
     public event Action<BallScript> ballDropped;
 
-    public float ballResetTimer;
+    private float ballResetTimer;
     public Vector2 InitialPosition;
+
+    [SerializeField] private GameObject magnetLine;
+
+    [SerializeField] private float MaxVelocity;
 
     private void Awake()
     {
@@ -20,7 +24,9 @@ public class BallScript : MonoBehaviour
 
     private void Update()
     {
-        CheckForReset();
+        CheckForBorderReset();
+        LimitSpeed();
+        UpdateVisuals();
     }
 
     public void BallInitialMove()
@@ -39,9 +45,9 @@ public class BallScript : MonoBehaviour
         }
     }
 
-    public void CheckForReset()
+    public void CheckForBorderReset()
     {
-        if(transform.position.y < -5f)
+        if(transform.position.y < GameManager.Instance.BottomYLimit || transform.position.y > GameManager.Instance.TopYLimit)
         {
             ballResetTimer += Time.deltaTime;
         }
@@ -56,13 +62,49 @@ public class BallScript : MonoBehaviour
         }
     }
 
+
     IEnumerator BallReset()
     {
         transform.position = InitialPosition;
         rb.linearVelocity = new Vector2(0f, 0f);
         ballResetTimer = 0;
         yield return new WaitForSeconds(0.5f);
-        BallInitialMove();
+        //BallInitialMove();
     }
     
+    public void Pulled(Transform source, float force)
+    {
+        Vector2 direction = (source.position - transform.position).normalized;
+        rb.AddForce(direction * force, ForceMode2D.Force);
+    }
+
+    public void Pushed(Transform source, float force)
+    {
+        Vector2 direction = (transform.position - source.position).normalized;
+        rb.AddForce(direction * force, ForceMode2D.Force);
+    }
+
+    public void LimitSpeed()
+    {
+        if(rb.linearVelocity.magnitude > MaxVelocity)
+        {
+            rb.linearVelocity = rb.linearVelocity.normalized * MaxVelocity;
+        }
+    }
+
+    public void UpdateVisuals()
+    {
+        Vector2 lookDir = transform.position - GameManager.Instance.Player.transform.position;
+        float angle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg - 90f;
+        magnetLine.transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(collision.gameObject.tag == "Pit")
+        {
+            Debug.Log("Ball hit a pit!");
+            StartCoroutine(BallReset());
+        }
+    }
 }
