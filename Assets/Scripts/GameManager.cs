@@ -1,11 +1,12 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
+using TMPro;
 
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
-    
+
     private Camera mainCamera;
     public Camera MainCamera { get { return mainCamera; } }
 
@@ -17,18 +18,29 @@ public class GameManager : MonoBehaviour
 
     private List<BrickScript> bricks;
 
-    [SerializeField] private float topYLimit;
+    [SerializeField] private float StartingLives;
+    private float Lives;
+    private bool IsGameOver;
+
+    [SerializeField] private TMP_Text livesText;
+
+    /*[SerializeField] private float topYLimit;
     public float TopYLimit { get { return topYLimit; } }
     
     [SerializeField] private float bottomYLimit;
-    public float BottomYLimit { get { return bottomYLimit; } }
+    public float BottomYLimit { get { return bottomYLimit; } }*/
 
+    [SerializeField] private float maxDistanceFromCenter;
+    public float MaxDistanceFromCenter { get { return maxDistanceFromCenter; } }
 
     public int score;
+    [SerializeField] private TMP_Text scoreText;
 
     private bool gamePaused;
     [SerializeField] private GameObject ControlsExplanation;
     [SerializeField] private GameObject YouWinScreen;
+    [SerializeField] private GameObject GameOverScreen;
+
 
     private void Awake()
     {
@@ -68,7 +80,10 @@ public class GameManager : MonoBehaviour
         player = FindFirstObjectByType<PlayerController>();
         SubsribeToPlayerEvents();
 
+        UnsubsribeFromBallEvents();
         ball = FindFirstObjectByType<BallScript>();
+        SubsribeToBallEvents();
+
         mainCamera = FindFirstObjectByType<Camera>();
         
         OnLevelStart();
@@ -98,12 +113,43 @@ public class GameManager : MonoBehaviour
         }*/
     }
 
+    public void SubsribeToBallEvents()
+    {
+        if (ball != null)
+        {
+            ball.OnReset += OnBallReset;
+        }
+        /*else
+        {
+            Debug.LogWarning("GameManager.player is null!");
+        }*/
+    }
+
+    public void UnsubsribeFromBallEvents()
+    {
+        if (ball != null)
+        {
+            ball.OnReset -= OnBallReset;
+        }
+        /*else
+        {
+            Debug.LogWarning("GameManager.player is null!");
+        }*/
+    }
+
     public void OnLevelStart()
     {
+        Lives = StartingLives;
+        IsGameOver = false;
+
+        livesText.text = ("Lives: " + Lives);
+
 
         YouWinScreen.SetActive(false);
+        GameOverScreen.SetActive(false);
 
         score = 0;
+        scoreText.text = ("score: " + score);
         //Debug.Log("OnLevelStart called!");
         Pause();
         GetBricks();
@@ -115,7 +161,7 @@ public class GameManager : MonoBehaviour
     {
         if (player != null)
         {
-            player.transform.position = new Vector3(0, -4.5f, 0);
+            //player.transform.position = new Vector3(0, -6f, 0);
         }
     }
 
@@ -159,34 +205,53 @@ public class GameManager : MonoBehaviour
     public void IncreaseScore(int increase)
     {
         score += increase;
+        scoreText.text = ("score: " + score);
         //Debug.Log("Score = " + score);
     }
 
     public void BallSetup()
     {
-        ball.BallInitialMove();
+        //ball.BallInitialMove();
     }
 
-    public void PullBall(Transform source, float force)
+    public void PullBall(Transform source, float force, float dampingFactor)
     {
         if (ball != null)
         { 
-            ball.Pulled(source, force); 
+            ball.Pulled(source, force , dampingFactor); 
         }
     }
 
-    public void PushBall(Transform source, float force)
+    public void PushBall(Transform source, float force, float dampingFactor)
     {
         if (ball != null)
         {
-            ball.Pushed(source, force);
+            ball.Pushed(source, force, dampingFactor);
         }
+    }
+
+    public void OnBallReset()
+    {
+        Lives--;
+        livesText.text = ("Lives: " + Lives);
+
+        if (Lives <= 0)
+        {
+            GameOver();
+        }
+    }
+
+    public void GameOver()
+    {
+        Time.timeScale = 0f;
+        GameOverScreen.SetActive(true);
+        IsGameOver = true;
     }
 
 
     public void CheckForPause()
     {
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape) && !IsGameOver)
         {
             if (!gamePaused)
             {

@@ -2,15 +2,18 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
+    [SerializeField] private Transform ParentObject;
+    [SerializeField] private GameObject visuals;
+
     [SerializeField] private float hSpeed;
     [SerializeField] private float hMouseSpeed;
 
-    private float horiInput;
-    private float currentSpeed;
+    [SerializeField] private float DistanceFromCenter = 6f;
 
     [SerializeField] private float magnetPower;
+    [SerializeField] private float dampingFactor;
 
-    [SerializeField] private GameObject visuals;
+
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -23,7 +26,7 @@ public class PlayerController : MonoBehaviour
     {
         GetMovementInput();
         GetMagnetInput();
-        UpdateVisuals();
+        //UpdateVisuals();
     }
 
     public void GetMovementInput()
@@ -43,16 +46,20 @@ public class PlayerController : MonoBehaviour
     
     public void PlayerMoveWithButtons(float h)
     {
-        transform.position += Vector3.right * h * hSpeed * Time.deltaTime;
+       /* transform.position += Vector3.right * h * hSpeed * Time.deltaTime;
         float xPos = Mathf.Clamp(transform.position.x, -8.0f, 8.0f);
-        transform.position = new Vector3(xPos, GameManager.Instance.BottomYLimit, 0);
+        transform.position = new Vector3(xPos, GameManager.Instance.BottomYLimit, 0);*/
     }
 
     public void PlayerMoveWithMouse(float h)
     {
-        float mousePosInWorld = GameManager.Instance.MainCamera.ScreenToWorldPoint(Input.mousePosition).x;
+        /*float mousePosInWorld = GameManager.Instance.MainCamera.ScreenToWorldPoint(Input.mousePosition).x;
         float xPos = Mathf.Clamp(mousePosInWorld, -8.0f, 8.0f);
-        transform.position = new Vector3(xPos, GameManager.Instance.BottomYLimit, 0);
+        transform.position = new Vector3(xPos, GameManager.Instance.BottomYLimit, 0);*/
+
+        Vector2 lookDir = ParentObject.position - GameManager.Instance.MainCamera.ScreenToWorldPoint(Input.mousePosition);
+        float angle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg - 90f;
+        ParentObject.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
     }
 
     public void GetMagnetInput()
@@ -60,14 +67,24 @@ public class PlayerController : MonoBehaviour
         if (Input.GetKey(KeyCode.Mouse0) && !Input.GetKey(KeyCode.Mouse1))
         {
             //Attract
-            GameManager.Instance.PullBall(this.transform, magnetPower);
-
+            GameManager.Instance.PullBall(this.transform, magnetPower, dampingFactor);
         }
+        else
+        {
+            GameManager.Instance.Ball.StopPulling();
+        }
+        
         if (Input.GetKey(KeyCode.Mouse1) && !Input.GetKey(KeyCode.Mouse0))
         {
             //Repel
-            GameManager.Instance.PushBall(this.transform, magnetPower);
+            GameManager.Instance.PushBall(this.transform, magnetPower, dampingFactor);
         }
+        else
+        {
+            GameManager.Instance.Ball.StopPushing();
+        }
+
+
     }
 
 
