@@ -32,7 +32,7 @@ public class BrickScript : MonoBehaviour
         BrickHealth = Mathf.Clamp(BrickHealth - 5f, 0, 10f);
         if(BrickHealth <= 0)
         {
-            BrickDestroyed?.Invoke(this);
+            animator.Play("BrickDestroyedAnimation");
         }
         else
         {
@@ -41,5 +41,10 @@ public class BrickScript : MonoBehaviour
         }
     }
 
+    public void DestroyBrick()
+    {
+        Debug.Log("DestroyBrick() called!");
+        BrickDestroyed?.Invoke(this);
+    }
 
 }

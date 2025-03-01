@@ -64,29 +64,28 @@ public class PlayerController : MonoBehaviour
 
     public void GetMagnetInput()
     {
-        if (Input.GetKey(KeyCode.Mouse0) && !Input.GetKey(KeyCode.Mouse1))
+        if (Input.GetKey(KeyCode.Mouse1) && Input.GetKey(KeyCode.Mouse0))
+        {
+            //Breaks
+            GameManager.Instance.Ball.HitTheBreaks(dampingFactor);
+        }
+        else if (Input.GetKey(KeyCode.Mouse0) && !Input.GetKey(KeyCode.Mouse1))
         {
             //Attract
             GameManager.Instance.PullBall(this.transform, magnetPower, dampingFactor);
         }
-        else
-        {
-            GameManager.Instance.Ball.StopPulling();
-        }
-        
-        if (Input.GetKey(KeyCode.Mouse1) && !Input.GetKey(KeyCode.Mouse0))
+        else if (Input.GetKey(KeyCode.Mouse1) && !Input.GetKey(KeyCode.Mouse0))
         {
             //Repel
             GameManager.Instance.PushBall(this.transform, magnetPower, dampingFactor);
         }
         else
         {
+            GameManager.Instance.Ball.StopPulling();
             GameManager.Instance.Ball.StopPushing();
         }
 
-
     }
-
 
     public void UpdateVisuals()
     {

@@ -194,7 +194,7 @@ public class GameManager : MonoBehaviour
     {
         bricks.Remove(brick);
         IncreaseScore(10);
-        Destroy(brick.gameObject, 0.01f);
+        Destroy(brick.gameObject);
         if(bricks.Count <= 0)
         {
             Debug.Log("All bricks are gone!");
