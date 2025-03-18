@@ -118,6 +118,14 @@ public class BallScript : MonoBehaviour
         PushLineActive = false;
     }
 
+    public void HitTheBreaks(float dampingFactor)
+    {
+        PushLineActive = true;
+        PullLineActive = true;
+
+        DampenSpeed(dampingFactor);
+    }
+
     public void DampenPerpendicularSpeed(Vector2 direction, float dampingFactor)
     {
         // Project velocity onto the reference vector (parallel component)
@@ -131,6 +139,11 @@ public class BallScript : MonoBehaviour
 
         // Set the new velocity
         rb.linearVelocity = parallelComponent + perpendicularComponent;
+    }
+
+    public void DampenSpeed(float dampingFactor)
+    {
+        rb.linearVelocity *= dampingFactor;
     }
 
     public void LimitSpeed()
